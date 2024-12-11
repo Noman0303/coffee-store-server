@@ -1,5 +1,5 @@
-const express = require('express');
-const cors = require('cors');
+const express = require ('express')
+const cors = require ('cors');
 require('dotenv').config();
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -34,14 +34,49 @@ async function run() {
 
         // Server theke data read korte app.get use korbo. ekhane cursor holo ekta pointer select kora hocche data read korar jonno in coffeeCollection. Then sei cursor ke read korar jonno json theke array te convert korbo.then sei result ke response hisebe pathay dibo.
 
+        // Data read
+
         app.get('/coffee', async (req, res) => {
             const cursor = coffeeCollection.find();
             const result = await cursor.toArray();
             res.send(result);
         })
 
+        // ID wise Data get & update
+
+        // Data get for update 
+
+        app.get('/coffee/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {_id:new ObjectId(id)}
+            const result = await coffeeCollection.findOne(query);
+            res.send(result);
+        })
+
+        // Data update 
+        app.put('/coffee/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = {_id:new ObjectId(id)}
+            const options = { upsert: true };
+            const updatedCoffee = req.body;
+            const coffee ={
+                $set:{
+                    name : updatedCoffee.name, 
+                    quantity : updatedCoffee.quantity, 
+                    supplier : updatedCoffee.supplier, 
+                    taste : updatedCoffee.taste, 
+                    category : updatedCoffee.category, 
+                    details : updatedCoffee.details, 
+                    photo : updatedCoffee.photo,
+                }
+            }
+            const result = await coffeeCollection.updateOne(filter, coffee, options);
+            res.send(result);
+        })
+
 
         // document already created as newCoffee here by app.post function for the server/coffee route
+        // Data Create
 
         app.post('/coffee', async (req, res) => {
             const newCoffee = req.body;
@@ -51,6 +86,8 @@ async function run() {
             // sending the result as a response to the server/coffee route
             res.send(result)
         })
+
+        // Data Delete
 
         app.delete('/coffee/:id', async (req, res) => {
             const id = req.params.id;
